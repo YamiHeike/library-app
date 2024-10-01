@@ -1,10 +1,7 @@
 package com.library.repository;
 
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 public class BookDao extends AbstractDao implements Dao<Book>{
 
@@ -96,7 +93,62 @@ public class BookDao extends AbstractDao implements Dao<Book>{
     }
 
     @Override
-    public void delete(Book book) {
+    public int delete(Book book) {
+        String sql = "DELETE FROM book WHERE id = ?";
+        int deletedRows = 0;
 
+        try(
+                Connection con = getConnection();
+                PreparedStatement statement = con.prepareStatement(sql);
+        ){
+          statement.setLong(1, book.getId());
+          deletedRows = statement.executeUpdate();
+        } catch(SQLException e) {
+            e.printStackTrace();
+        }
+        return deletedRows;
+    }
+
+    @Override
+    public int[] update(List<Book> books) {
+        int[] records = {};
+        String sql = "UPDATE book SET title = ?, author = ?, rating = ? WHERE id = ?";
+        try(
+                Connection con = getConnection();
+                PreparedStatement statement = con.prepareStatement(sql);
+                ) {
+            for(Book book : books) {
+                statement.setString(1, book.getTitle());
+                statement.setString(2, book.getAuthor());
+                statement.setInt(3,book.getRating());
+                statement.setLong(4, book.getId());
+
+                statement.addBatch();
+            }
+
+            records = statement.executeBatch();
+        } catch(SQLException e) {
+            e.printStackTrace();
+        }
+        return records;
+    }
+
+    @Override
+    public int[] delete(List<Book> books) {
+        String sql = "DELETE FROM book WHERE id = ?";
+        int[] records = {};
+        try(
+                Connection con = getConnection();
+                PreparedStatement statement = con.prepareStatement(sql);
+                ) {
+            for(Book book : books) {
+                statement.setLong(1, book.getId());
+                statement.addBatch();
+            }
+            records = statement.executeBatch();
+        } catch(SQLException e) {
+            e.printStackTrace();
+        }
+        return records;
     }
 }

@@ -9,4 +9,5 @@ public class Book {
     long id;
     String title;
     String author;
+    int rating;
 }

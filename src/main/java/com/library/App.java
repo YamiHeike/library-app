@@ -6,6 +6,7 @@ import com.library.repository.Dao;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class App {
     public static void main( String[] args ) {
@@ -19,7 +20,7 @@ public class App {
 
         Optional<Book> bookPlaceholder = bookDao.findById(1);
         //Accessing the book
-        //Optionals
+
         bookPlaceholder.ifPresent(System.out::println);
         if(bookPlaceholder.isPresent()) {
             Book book = bookPlaceholder.get();
@@ -33,8 +34,19 @@ public class App {
         //newBook.setAuthor("Amanda Montell");
         //newBook = bookDao.create(newBook);
         //System.out.println(newBook);
+
         books.get(0).setTitle("Effective Java: Second Edition");
         bookDao.update(books.get(0));
         books.forEach(System.out::println);
+
+        //int numDel = bookDao.delete(newBook);
+        //System.out.println("Number of deleted records: " + numDel);
+        //System.out.println(bookDao.findAll());
+        //books = bookDao.findAll();
+
+        List<Book> updatedEntries = books.stream()
+                .peek(b -> b.setRating(5))
+                .collect(Collectors.toList());
+        bookDao.update(updatedEntries);
     }
 }

@@ -8,5 +8,7 @@ public interface Dao<T> {
     List<T> findAll();
     T create(T t);
     T update(T t);
-    void delete(T t);
+    int delete(T t);
+    int[] update(List<T> t);
+    int[] delete(List<T> t);
 }
