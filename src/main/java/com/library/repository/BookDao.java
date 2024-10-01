@@ -8,7 +8,7 @@ public class BookDao extends AbstractDao implements Dao<Book>{
     @Override
     public Optional<Book> findById(long id) {
         Optional<Book> book = Optional.empty();
-        String sql = "SELECT id, title, author FROM book WHERE id = ?";
+        String sql = "SELECT id, title, author, rating FROM book WHERE id = ?";
         try(
                 Connection connection = getConnection();
                 PreparedStatement statement = connection.prepareStatement(sql);
@@ -20,6 +20,7 @@ public class BookDao extends AbstractDao implements Dao<Book>{
                     foundBook.setId(id);
                     foundBook.setTitle(rst.getString("title"));
                     foundBook.setAuthor(rst.getString("author"));
+                    foundBook.setRating(rst.getInt("rating"));
                 }
                 book = Optional.of(foundBook);
             }
@@ -32,28 +33,23 @@ public class BookDao extends AbstractDao implements Dao<Book>{
     @Override
     public List<Book> findAll() {
         List<Book> books = Collections.emptyList();
-        String sql = "SELECT * FROM book";
-        try(
-                Connection con = getConnection();
-                Statement stmt = con.createStatement();
-                ResultSet rst = stmt.executeQuery(sql);
-                ) {
-            books = new ArrayList<Book>();
 
-            while(rst.next()) {
+        JdbcQueryTemplate<Book> template = new JdbcQueryTemplate<Book>() {
+            @Override
+            public Book mapItem(ResultSet resultSet) throws SQLException {
                 Book book = new Book();
-                book.setId(rst.getLong("id"));
-                book.setTitle(rst.getString("title"));
-                book.setAuthor(rst.getString("author"));
-                books.add(book);
+                book.setId(resultSet.getLong("id"));
+                book.setTitle(resultSet.getString("title"));
+                book.setAuthor(resultSet.getString("author"));
+                book.setRating(resultSet.getInt("rating"));
+                return book;
             }
-            return books;
-        } catch(SQLException e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
+        };
 
+        books = template.queryForList("SELECT id, title, author, rating FROM book");
+
+        return books;
+    }
     @Override
     public Book create(Book book) {
         String sql = "INSERT INTO book (title, author) VALUES (?, ?)";
